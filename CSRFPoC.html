@@ -1,0 +1,90 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>CSRF PoC Generator</title>
+</head>
+
+<body>
+	<main>
+		<h1>Generate your CSRF PoC</h1>
+		<form name="csrfForm" action="javascript:generateCSRF()">
+			<label for="method">Pick the HTTP method:</label>
+			<select id="method" name="method">
+				<option value="GET">GET</option>
+				<option value="POST">POST</option>
+				<option value="HEAD">HEAD</option>
+			</select>
+			<br />
+			<br />
+			<label for="contentType">Pick the Content-Type:</label>
+			<select id="contentType" name="contentType">
+				<option value="application/x-www-form-urlencoded">application/x-www-form-urlencoded</option>
+				<option value="multipart/form-data">multipart/form-data</option>
+				<option value="multipart/plain">multipart/plain</option>
+			</select>
+			<br />
+			<br />
+			<label for="url">URL:</label>
+			<br />
+			<textarea id="url" type="text" placeholder="http://mywebsite.com/hello.aspx"
+				style="width: 500px;"></textarea>
+			<br />
+			<br />
+			<label for="parameters">Parameters:</label>
+			<br />
+			<textarea id="parameters" type="text" placeholder="par1=hello&par2=world" style="width: 500px;"></textarea>
+			<br />
+			<br />
+			<input type="submit" value="Generate!">
+		</form>
+	</main>
+	<script type="text/javascript">
+		function getTableElement(name, value) {
+			return "<tr><td>" + name + "</td><td><input type=\"text\" name=\"" + name + "\" value=\"" + value + "\"></td></tr>";
+		};
+
+		function download(filename, text) {
+			var pom = document.createElement('a');
+			pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+			pom.setAttribute('download', filename);
+			if (document.createEvent) {
+				var event = document.createEvent('MouseEvents');
+				event.initEvent('click', true, true);
+				pom.dispatchEvent(event);
+			}
+			else {
+				pom.click();
+			}
+		};
+
+		function generateCSRF() {
+			let method = document.getElementById("method").value;
+			let contentType = document.getElementById("contentType").value;
+			let url = document.getElementById("url").value;
+			let parameters = document.getElementById("parameters").value;
+
+			let content = "<html>";
+			content += "<form enctype=\"" + contentType + "\" method=\"" + method + "\" action=\"" + url + "\">";
+			content += "<table>";
+
+			if (parameters != "") {
+				let arrayParameters = parameters.trim().split("&");
+				arrayParameters.forEach(element => {
+					let name = element.split("=")[0];
+					let value = element.split("=")[1];
+					content += getTableElement(name, value);
+				});
+			}
+
+			content += "</table><input type=\"submit\" value=\"" + url + "\">";
+			content += "</form></html>";
+			download("generatedCSRFPoC.html", content);
+		};
+	</script>
+</body>
+
+</html>
